@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import CardFlip from "../components/CardFlip"; // Reuse your existing card flip component
+import CardFlip from "../components/CardFlip";
 import "@/app/globals.css";
 
-const Player = () => {
+const Dealer = () => {
   const cardImages = [
     "/cardImages/ffive.png",
     "/cardImages/sthree.png",
@@ -112,47 +112,45 @@ const Player = () => {
   };
 
   return (
-    <div className="min-h-screen bg-red-900 flex flex-col justify-center items-center text-center p-8">
+    <div className="min-h-screen bg-red-900 flex flex-col  items-center text-center ">
+          <div className="w-full flex justify-between p-4 max-w-4xl">
+
       <button
         onClick={assignCardValues}
         className="mb-4 px-4 py-2 bg-blue-500 text-white rounded"
       >
         Assign Values
       </button>
+      <button
+        onClick={() => handleReveal(1)}
+        className="bg-yellow-500 text-black px-4 py-2 rounded"
+      >
+        Reveal Card B
+      </button>
+      <button
+        onClick={() => handleReveal(0)}
+        className="bg-yellow-500 text-black px-4 py-2 rounded"
+      >
+        Reveal Card A
+      </button>
+</div>
 
-      <div className="grid grid-cols-3 gap-4 w-full max-w-4xl">
+      {/* Stacked sections A and B with Joker section on the right */}
+      <div className="grid grid-cols-2 gap-4 w-full max-w-4xl">
         {/* Section A */}
-        <div className="col-span-1">
-          <div className="bg-red-700 border-2 border-yellow-500 p-4">
-            <h1 className="text-yellow-300 mb-4">A</h1>
-            <div className="h-48 border-dashed border-2 border-yellow-300 flex items-center justify-center mb-4">
-              {displayedCards[0].length > 0 ? (
-                displayedCards[0].map((image, index) => (
-                  <CardFlip
-                    key={index}
-                    frontImage={image}
-                    frontContent={revealedCards[cardImages.indexOf(image)] ? cardValues[cardImages.indexOf(image)] : null}
-                    isRevealed={revealedCards[cardImages.indexOf(image)]}
-                  />
-                ))
-              ) : (
-                <button
-                  onClick={() => handleReveal(0)}
-                  className="bg-yellow-500 text-black px-4 py-2 rounded"
-                >
-                  Reveal Card A
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
+        <div className="col-span-1 relative">
 
-        {/* First Card Section */}
-        <div className="col-span-1">
-          <div className="bg-red-700 border-2 border-yellow-500 p-4">
-            <h1 className="text-yellow-300 mb-4">1st Card</h1>
-            <div className="h-48 border-dashed border-2 border-yellow-300 flex items-center justify-center mb-4">
-              <p className="text-white">First Card Placeholder</p>
+          <div className="bg-red-700 border-2 border-yellow-500 p-4 ">
+            <h1 className="text-yellow-300 mb-4">A</h1>
+            <div className="h-40 border-dashed border-2 border-yellow-300 flex items-center justify-center mb-4">
+              {displayedCards[0].map((image, index) => (
+                <CardFlip
+                  key={index}
+                  frontImage={image}
+                  frontContent={revealedCards[cardImages.indexOf(image)] ? cardValues[cardImages.indexOf(image)] : null}
+                  isRevealed={revealedCards[cardImages.indexOf(image)]}
+                />
+              ))}
             </div>
           </div>
         </div>
@@ -161,7 +159,7 @@ const Player = () => {
         <div className="col-span-1 row-span-2">
           <div className="bg-red-700 border-2 border-yellow-500 p-4 h-full flex flex-col justify-center">
             <h1 className="text-yellow-300 mb-4">Joker</h1>
-            <div className="h-48 border-dashed border-2 border-yellow-300 flex items-center justify-center mb-4">
+            <div className="h-36 border-dashed border-2 border-yellow-300 flex items-center justify-center mb-4">
               {jokerCard ? (
                 <CardFlip
                   frontImage={jokerCard}
@@ -181,60 +179,44 @@ const Player = () => {
         </div>
 
         {/* Section B */}
-        <div className="col-span-1">
-          <div className="bg-red-700 border-2 border-yellow-500 p-4">
+        <div className="col-span-1 relative">
+
+          <div className="bg-red-700 border-2 border-yellow-500 p-4 ">
             <h1 className="text-yellow-300 mb-4">B</h1>
             <div className="h-48 border-dashed border-2 border-yellow-300 flex items-center justify-center mb-4">
-              {displayedCards[1].length > 0 ? (
-                displayedCards[1].map((image, index) => (
-                  <CardFlip
-                    key={index}
-                    frontImage={image}
-                    frontContent={revealedCards[cardImages.indexOf(image)] ? cardValues[cardImages.indexOf(image)] : null}
-                    isRevealed={revealedCards[cardImages.indexOf(image)]}
-                  />
-                ))
-              ) : (
-                <button
-                  onClick={() => handleReveal(1)}
-                  className="bg-yellow-500 text-black px-4 py-2 rounded m-0"
-                >
-                  Reveal Card B
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* First Card Section */}
-        <div className="col-span-1">
-          <div className="bg-red-700 border-2 border-yellow-500 p-4">
-            <h1 className="text-yellow-300 mb-4">1st Card</h1>
-            <div className="h-48 border-dashed border-2 border-yellow-300 flex items-center justify-center mb-4">
-              <p className="text-white">First Card Placeholder</p>
+              {displayedCards[1].map((image, index) => (
+                <CardFlip
+                  key={index}
+                  frontImage={image}
+                  frontContent={revealedCards[cardImages.indexOf(image)] ? cardValues[cardImages.indexOf(image)] : null}
+                  isRevealed={revealedCards[cardImages.indexOf(image)]}
+                />
+              ))}
             </div>
           </div>
         </div>
       </div>
 
+      {/* BETS section */}
       <div className="bg-red-700 border-t-2 border-yellow-500 mt-8 p-4 w-full max-w-4xl">
         <h2 className="text-yellow-300">BETS</h2>
         <p className="text-white">Max: 5000, Min: 100</p>
       </div>
 
+      {/* STATISTICS section */}
       <div className="bg-red-700 border-t-2 border-yellow-500 mt-4 p-4 w-full max-w-4xl">
         <h2 className="text-yellow-300">STATISTICS</h2>
         <div className="flex justify-between">
           <span className="text-white">A</span>
           <div className="bg-gray-200 h-4 w-3/4 relative mx-2">
-            <div className="bg-yellow-500 h-full" style={{ width: '50%' }}></div>
-            <div className="bg-blue-500 h-full absolute top-0 left-1/2 w-1/2"></div>
+            <div className="bg-blue-500 h-4 absolute left-0 top-0 w-1/3"></div>
           </div>
           <span className="text-white">B</span>
         </div>
       </div>
     </div>
+
   );
 };
 
-export default Player;
+export default Dealer;
