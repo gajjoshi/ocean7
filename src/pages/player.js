@@ -24,7 +24,7 @@ const Dealer = () => {
   // Function to fetch card state every 5 seconds
   const fetchCardState = async () => {
       try {
-          const response = await fetch('http://127.0.0.1:8000/myapp/api/update_card_state/', {
+          const response = await fetch('https://gaj.pythonanywhere.com/myapp/api/update_card_state/', {
               method: 'POST',
               headers: {
                   'Content-Type': 'application/json',
@@ -84,15 +84,15 @@ const Dealer = () => {
             <div className="bg-red-700 border-2 border-yellow-500 p-4 h-full flex flex-col justify-center">
                 <h1 className="text-yellow-300 mb-4">Joker</h1>
                 <div className="h-36 border-dashed border-2 border-yellow-300 flex items-center justify-center mb-4">
-                {data && ( // Ensure data and jokerCard exist
+                {/* {data && ( // Ensure data and jokerCard exist
         <CardFlip
             frontImage={data.jokerCard.image} // Access the jokerCard correctly
-            // frontContent={data.jokerCard.name}
+            frontContent={data.jokerCard.name}
             isRevealed={true} // Joker card should be revealed if it exists
             alt={data.jokerCard.name}
             width="100"
         />
-    )}
+    )} */}
                 </div>
             </div>
         </div>
