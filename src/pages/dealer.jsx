@@ -3,7 +3,8 @@
 import { useState } from "react";
 import CardFlip from "../components/CardFlip";
 import "@/app/globals.css";
-
+import axios from "axios";
+import cards from "../../backend/data/cards"
 const Dealer = () => {
   const cardImages = [
     "/cardImages/ffive.png",
@@ -18,108 +19,67 @@ const Dealer = () => {
 
   const [cardValues, setCardValues] = useState(Array(cardImages.length).fill(null));
   const [revealedCards, setRevealedCards] = useState(Array(cardImages.length).fill(false));
-  const [displayedCards, setDisplayedCards] = useState([[], []]); // A and B sections
-  const [currentIndex, setCurrentIndex] = useState([0, 0]); // Indexes for sections A and B
-  const [assignedCardIndices, setAssignedCardIndices] = useState([[], []]); // Track assigned card indices
-  const [jokerCard, setJokerCard] = useState(null); // Joker card state
+  const [displayedCards, setDisplayedCards] = useState([[], [], []]); // A and B sections
+  const [currentIndex, setCurrentIndex] = useState([0, 0,0]); // Indexes for sections A and B
+  const [assignedCardIndices, setAssignedCardIndices] = useState([[], [], []]); // Track assigned card indices
 
-  // Assign unique card values and shuffle
-  const assignCardValues = () => {
-    const uniqueValues = Array.from({ length: cardImages.length }, (_, i) => `Value ${i + 1}`);
 
-    // Shuffle card values and images
-    for (let i = uniqueValues.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [uniqueValues[i], uniqueValues[j]] = [uniqueValues[j], uniqueValues[i]];
-    }
+  const handleReveal = async (sectionIndex) => {
+    try {
+      const response = await axios.get(`http://localhost:5000/api/reveal/${sectionIndex}`);
+      const revealedCard = response.data.card; // Assuming it returns the card object
+      
+      console.log(`Revealed card: ${revealedCard.name}`);
 
-    const shuffledImagesArray = [...cardImages];
-    for (let i = shuffledImagesArray.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffledImagesArray[i], shuffledImagesArray[j]] = [shuffledImagesArray[j], shuffledImagesArray[i]];
-    }
-
-    setCardValues(shuffledImagesArray.map((_, i) => uniqueValues[i]));
-    setRevealedCards(Array(cardImages.length).fill(false));
-    setCurrentIndex([0, 0]);
-    setDisplayedCards([[], []]);
-    setAssignedCardIndices([[], []]);
-    setJokerCard(null);
-  };
-
-  // Reveal card in a section (A or B)
-  const handleReveal = (sectionIndex) => {
-    var index = currentIndex[sectionIndex];
-    let image;
-
-    if (index < cardImages.length) {
-      let found = false;
-      while (index < cardImages.length && !found) {
-        image = cardImages[index];
-        const globalIndex = cardImages.indexOf(image);
-
-        if (!assignedCardIndices[0].includes(globalIndex) && !assignedCardIndices[1].includes(globalIndex)) {
-          found = true;
-          setAssignedCardIndices((prev) => {
-            const newAssigned = [...prev];
-            newAssigned[sectionIndex].push(globalIndex);
-            return newAssigned;
-          });
-        }
-        index++;
-      }
-
-      if (found) {
-        setDisplayedCards((prev) => {
-          const newDisplayedCards = [...prev];
-          newDisplayedCards[sectionIndex].push(image);
-          return newDisplayedCards;
+      // Find the card object in the cards array
+      const card = cards.find(c => c.id === revealedCard.id);
+      if (card) {
+        setDisplayedCards(prev => {
+          const newDisplayed = [...prev];
+          newDisplayed[sectionIndex].push(card.id); // Store the card ID instead of the whole card object
+          return newDisplayed;
         });
 
-        setRevealedCards((prev) => {
+        // Mark the card as revealed
+        setRevealedCards(prev => {
           const newRevealedCards = [...prev];
-          newRevealedCards[cardImages.indexOf(image)] = true;
+          newRevealedCards[cards.indexOf(card)] = true; // Update the revealed status
           return newRevealedCards;
         });
-
-        setCurrentIndex((prev) => {
-          const newIndex = [...prev];
-          newIndex[sectionIndex] += 1;
-          return newIndex;
-        });
-      } else {
-        alert(`No more unique cards available in Section ${sectionIndex + 1}`);
       }
-    } else {
-      alert(`No more cards available in Section ${sectionIndex + 1}`);
+    } catch (error) {
+      console.error('Error fetching card:', error);
     }
   };
 
-  // Reveal the Joker card
-  const revealJoker = () => {
-    if (!jokerCard) {
-      let found = false;
-      while (!found) {
-        const randomIndex = Math.floor(Math.random() * cardImages.length);
-        if (!assignedCardIndices[0].includes(randomIndex) && !assignedCardIndices[1].includes(randomIndex)) {
-          setJokerCard(cardImages[randomIndex]);
-          found = true;
-        }
-      }
-    } else {
-      alert("The Joker card has already been revealed.");
+
+  const reassignCards = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/api/reset');
+      const resetCards = response.data.cards; // Assuming it returns an array of card objects
+
+      setCards(resetCards); // Update the state with the reset cards
+      console.log("Cards reset done");
+    } catch (error) {
+      console.error('Error resetting cards:', error);
     }
   };
-
   return (
     <div className="min-h-screen bg-red-900 flex flex-col  items-center text-center ">
           <div className="w-full flex justify-between p-4 max-w-4xl">
 
       <button
-        onClick={assignCardValues}
+        onClick={()=> reassignCards}
         className="mb-4 px-4 py-2 bg-blue-500 text-white rounded"
       >
         Assign Values
+      </button>
+      
+      <button
+        onClick={() => handleReveal(0)}
+        className="bg-yellow-500 text-black px-4 py-2 rounded"
+      >
+        Reveal Card A
       </button>
       <button
         onClick={() => handleReveal(1)}
@@ -128,10 +88,10 @@ const Dealer = () => {
         Reveal Card B
       </button>
       <button
-        onClick={() => handleReveal(0)}
+        onClick={() => handleReveal(2)}
         className="bg-yellow-500 text-black px-4 py-2 rounded"
       >
-        Reveal Card A
+        Reveal Joker
       </button>
 </div>
 
@@ -143,14 +103,17 @@ const Dealer = () => {
           <div className="bg-red-700 border-2 border-yellow-500 p-4 ">
             <h1 className="text-yellow-300 mb-4">A</h1>
             <div className="h-40 border-dashed border-2 border-yellow-300 flex items-center justify-center mb-4">
-              {displayedCards[0].map((image, index) => (
-                <CardFlip
-                  key={index}
-                  frontImage={image}
-                  frontContent={revealedCards[cardImages.indexOf(image)] ? cardValues[cardImages.indexOf(image)] : null}
-                  isRevealed={revealedCards[cardImages.indexOf(image)]}
-                />
-              ))}
+            {displayedCards[0].map((cardId, index) => {
+                const card = cards.find(c => c.id === cardId); // Find the card object by ID
+                return card ? (
+                  <CardFlip
+                    key={index}
+                    frontImage={card.image} // Use the image path from the card object
+                    frontContent={revealedCards[cards.indexOf(card)] ? card.name : null} // Display name or null based on revealed state
+                    isRevealed={revealedCards[cards.indexOf(card)]} // Pass the revealed state
+                  />
+                ) : null;
+              })}
             </div>
           </div>
         </div>
@@ -160,20 +123,17 @@ const Dealer = () => {
           <div className="bg-red-700 border-2 border-yellow-500 p-4 h-full flex flex-col justify-center">
             <h1 className="text-yellow-300 mb-4">Joker</h1>
             <div className="h-36 border-dashed border-2 border-yellow-300 flex items-center justify-center mb-4">
-              {jokerCard ? (
-                <CardFlip
-                  frontImage={jokerCard}
-                  frontContent={revealedCards[cardImages.indexOf(jokerCard)] ? cardValues[cardImages.indexOf(jokerCard)] : null}
-                  isRevealed={true}
-                />
-              ) : (
-                <button
-                  onClick={revealJoker}
-                  className="bg-yellow-500 text-black px-4 py-2 rounded"
-                >
-                  Reveal Joker
-                </button>
-              )}
+            {displayedCards[2].map((cardId, index) => {
+                const card = cards.find(c => c.id === cardId); // Find the card object by ID
+                return card ? (
+                  <CardFlip
+                    key={index}
+                    frontImage={card.image} // Use the image path from the card object
+                    frontContent={revealedCards[cards.indexOf(card)] ? card.name : null} // Display name or null based on revealed state
+                    isRevealed={revealedCards[cards.indexOf(card)]} // Pass the revealed state
+                  />
+                ) : null;
+              })}
             </div>
           </div>
         </div>
@@ -184,14 +144,17 @@ const Dealer = () => {
           <div className="bg-red-700 border-2 border-yellow-500 p-4 ">
             <h1 className="text-yellow-300 mb-4">B</h1>
             <div className="h-48 border-dashed border-2 border-yellow-300 flex items-center justify-center mb-4">
-              {displayedCards[1].map((image, index) => (
-                <CardFlip
-                  key={index}
-                  frontImage={image}
-                  frontContent={revealedCards[cardImages.indexOf(image)] ? cardValues[cardImages.indexOf(image)] : null}
-                  isRevealed={revealedCards[cardImages.indexOf(image)]}
-                />
-              ))}
+            {displayedCards[1].map((cardId, index) => {
+                const card = cards.find(c => c.id === cardId); // Find the card object by ID
+                return card ? (
+                  <CardFlip
+                    key={index}
+                    frontImage={card.image} // Use the image path from the card object
+                    frontContent={revealedCards[cards.indexOf(card)] ? card.name : null} // Display name or null based on revealed state
+                    isRevealed={revealedCards[cards.indexOf(card)]} // Pass the revealed state
+                  />
+                ) : null;
+              })}
             </div>
           </div>
         </div>
