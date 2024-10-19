@@ -9,9 +9,9 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
-
+import urllib.parse
+from pymongo import MongoClient
 from pathlib import Path
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -21,12 +21,21 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "django-insecure-_9!2n-n=!jadk1+z1xv(a1ql9v_2^7=busb3zy&k$5po3wng^m"
+# settings.py
 
+
+username = urllib.parse.quote_plus("gurpreetkaur325612")
+password = urllib.parse.quote_plus("Init@123")
+
+# MongoDB connection string with encoded credentials
+# MONGO_URI = "mongodb+srv://gurpreetkaur325612:Init@123@cluster0.cp6fe.mongodb.net/"
+MONGO_URI = f"mongodb+srv://{username}:{password}@cluster0.cp6fe.mongodb.net/gaj2"  # Specify your database here
+# 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 CORS_ALLOW_ALL_ORIGINS = True
 
-ALLOWED_HOSTS = ['192.168.1.7','127.0.0.1']
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition

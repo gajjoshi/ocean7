@@ -6,16 +6,16 @@ import "@/app/globals.css";
 import axios from "axios";
 import cards from "../../backend/data/cards"
 const Dealer = () => {
-  const cardImages = [
-    "/cardImages/ffive.png",
-    "/cardImages/sthree.png",
-    "/cardImages/hsix.png",
-    "/cardImages/d1.png",
-    "/cardImages/d3.png",
-    "/cardImages/d4.png",
-    "/cardImages/d5.png",
-    "/cardImages/fjack.png",
-  ]; // Your card images
+  // const cardImages = [
+  //   "/cardImages/ffive.png",
+  //   "/cardImages/sthree.png",
+  //   "/cardImages/hsix.png",
+  //   "/cardImages/d1.png",
+  //   "/cardImages/d3.png",
+  //   "/cardImages/d4.png",
+  //   "/cardImages/d5.png",
+  //   "/cardImages/fjack.png",
+  // ]; // Your card images
 
   const [cardValues, setCardValues] = useState(Array(cardImages.length).fill(null));
   const [revealedCards, setRevealedCards] = useState(Array(cardImages.length).fill(false));

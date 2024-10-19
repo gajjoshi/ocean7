@@ -4,20 +4,20 @@ import "@/app/globals.css";
 const GameLayout = () => {
 
 
-const cardImages = [
-        { "id": 1, "name": "Ace of Spades", "image": "/cardImages/ffive.png" },
-        { "id": 2, "name": "King of Hearts", "image":  "/cardImages/sthree.png" },
-        { "id": 3, "name": "Queen of Diamond", "image": "/cardImages/hsix.png" },    
-        { "id": 5, "name": "Queen of Diamond", "image": "/cardImages/hsix.png" },   
-        { "id": 6, "name": "King of Hearts", "image":  "/cardImages/sthree.png" },
-        { "id": 7, "name": "Queen of Diamond", "image": "/cardImages/hsix.png" },
-    ]
+// const cardImages = [
+//         { "id": 1, "name": "Ace of Spades", "image": "/cardImages/ffive.png" },
+//         { "id": 2, "name": "King of Hearts", "image":  "/cardImages/sthree.png" },
+//         { "id": 3, "name": "Queen of Diamond", "image": "/cardImages/hsix.png" },    
+//         { "id": 5, "name": "Queen of Diamond", "image": "/cardImages/hsix.png" },   
+//         { "id": 6, "name": "King of Hearts", "image":  "/cardImages/sthree.png" },
+//         { "id": 7, "name": "Queen of Diamond", "image": "/cardImages/hsix.png" },
+//     ]
     
     const [data, setData] = useState(null);  // Card data from the API
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [jokerCard, setJokerCard] = useState(null);
-    const [revealedCards, setRevealedCards] = useState(Array(cardImages.length).fill(false));
+    const [revealedCards, setRevealedCards] = useState(Array(52).fill(false));
 
     // Function to fetch card state after revealing a card
     const fetchCardState = async () => {
@@ -46,7 +46,7 @@ const cardImages = [
     const handleReveal = async (id) => {
         setIsLoading(true); // Show loading while revealing a card
         try {
-            const response = await fetch(`http://127.0.0.1:8000/myapp/api/assign_card/${id}/`, {
+            const response = await fetch(`http://127.0.0.1:8000/myapp/api/assign_card_to_section3/${id}/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -143,7 +143,7 @@ const cardImages = [
                                 <CardFlip
                                     key={index}
                                     frontImage={card.image}
-                                    frontContent={card.name}
+                                    // frontContent={card.name}
                                     isRevealed={true} // Cards are revealed when displayed
                                     alt={card.name}
                                     width="100"
@@ -161,7 +161,7 @@ const cardImages = [
                             {jokerCard && (
                                 <CardFlip
                                     frontImage={jokerCard.image}
-                                    frontContent={jokerCard.name}
+                                    // frontContent={jokerCard.name}
                                     isRevealed={true} // Joker card should be revealed if it exists
                                     alt={jokerCard.name}
                                     width="100"
@@ -180,7 +180,7 @@ const cardImages = [
                                 <CardFlip
                                     key={index}
                                     frontImage={card.image}
-                                    frontContent={card.name}
+                                    // frontContent={card.name}
                                     isRevealed={true} // Cards are revealed when displayed
                                     alt={card.name}
                                     width="100"
