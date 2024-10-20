@@ -12,5 +12,9 @@ urlpatterns = [
     path('api/assign_card_to_section2/<int:section_id>/', views.assign_card_to_section2, name='assign_card_to_section2'),
     path('api/check-for-new-documents/', views.check_for_new_documents, name='check_for_new_documents'),
     path('api/assign_card_to_section3/<int:section_id>/', views.assign_card_to_section3, name='assign_card_to_section3'),
+    path('api/assign_card_directly/', views.assign_card_directly, name='assign_card_directly'),
+    path('api/assign_joker_directly/', views.assign_joker_directly, name='assign_joker_directly'),
+    path('api/assign_card_directly2/', views.assign_card_directly2, name='assign_card_directly2'),
+
 
 ]
