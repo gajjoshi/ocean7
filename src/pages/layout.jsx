@@ -22,7 +22,7 @@ const GameLayout = () => {
     // Function to fetch card state after revealing a card
     const fetchCardState = async () => {
         try {
-            const response = await fetch('http://127.0.0.1:8000/myapp/api/update_card_state/', {
+            const response = await fetch('https://gaj.pythonanywhere.com/myapp/api/update_card_state/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -69,7 +69,7 @@ const GameLayout = () => {
     const handleReset = async () => {
       setIsLoading(true);  // Show loading while resetting
       try {
-          const response = await fetch('http://127.0.0.1:8000/myapp/api/reset_card_state/', {
+          const response = await fetch('https://gaj.pythonanywhere.com/myapp/api/reset_card_state/', {
               method: 'POST',
               headers: {
                   'Content-Type': 'application/json',
@@ -91,7 +91,7 @@ const GameLayout = () => {
  
   const revealJoker = async () => {
       try {
-          const response = await fetch('http://127.0.0.1:8000/myapp/api/reveal_joker/', {
+          const response = await fetch('https://gaj.pythonanywhere.com/myapp/api/reveal_joker/', {
               method: 'POST', // Use POST or GET depending on your backend setup
               headers: {
                   'Content-Type': 'application/json',
