@@ -6,54 +6,51 @@ import "@/app/globals.css";
 import axios from "axios";
 // import cards from "../../backend2/data/cards"
 const Dealer = () => {
-    const cardImages = [
-        "/cardImages/ffive.png",
-        "/cardImages/sthree.png",
-        "/cardImages/hsix.png",
-        "/cardImages/d1.png",
-        "/cardImages/d3.png",
-        "/cardImages/d4.png",
-        "/cardImages/d5.png",
-        "/cardImages/fjack.png",
-    ]; // Your card images
+    
 
     const [data, setData] = useState(null);  // Card data from the API
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [jokerCard, setJokerCard] = useState(null);
 
-    // Function to fetch card state every 5 seconds
-    const fetchCardState = async () => {
-        try {
-            const response = await fetch('http://127.0.0.1:8000/myapp/api/update_card_state/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            });
-            const result = await response.json();
-            if (result.status === 'success') {
-                setData(result.cardState);
-                console.log(result);
-                setJokerCard(result.cardState.jokerCard);
-                console.log(jokerCard);
-                setIsLoading(false);
-
-            } else {
-                setError(result.message);
-                setIsLoading(false);
-            }
-            
-        } catch (err) {
-            setError(err.message);
-            setIsLoading(false);
-        }
-    };
+    // // Function to fetch card state every 5 seconds
+    // const fetchCardState = async () => {
+    //     setIsLoading(true);  // Set loading to true at the start of the request
+    //     try {
+    //         const response = await fetch('http://127.0.0.1:8000/myapp/api/assign_card_to_section_A/', {
+    //             method: 'POST',  // Verify that the API expects a POST request
+    //             headers: {
+    //                 'Content-Type': 'application/json',
+    //             }
+    //         });
+    
+    //         // Check if the request was successful
+    //         if (!response.ok) {
+    //             throw new Error(`HTTP error! status: ${response.status}`);
+    //         }
+    
+    //         const result = await response.json();  // Parse the JSON from the response
+    
+    //         // Assuming the API returns `success: true` in the result
+    //         if (result.success) {
+    //             setData(result.state);  // Set the full card state (use `result.state`)
+    //             setJokerCard(result.state.jokerCard);  // Set the joker card
+    //             console.log('Updated Joker Card:', result.state.jokerCard);  // Log the joker card after updating it
+    //         } else {
+    //             setError(result.message || 'Something went wrong!');
+    //         }
+    //     } catch (err) {
+    //         setError(err.message);
+    //     } finally {
+    //         setIsLoading(false);  // Ensure loading is set to false in all cases
+    //     }
+    // };
+    
 
     // Use effect to poll the API every 5 seconds
     useEffect(() => {
         fetchCardState();  // Fetch immediately
-        const interval = setInterval(fetchCardState, 5000);  // Poll every 5 seconds
+        const interval = setInterval(fetchCardState, 500);  // Poll every 5 seconds
         return () => clearInterval(interval);  // Clean up interval on component unmount
     }, []);
 

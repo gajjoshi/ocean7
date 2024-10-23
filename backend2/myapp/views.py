@@ -6,6 +6,10 @@ import random
 from .data.cards import cards
 import re
 from .mongo_helper import MongoDBHelper
+from pymongo import MongoClient
+import urllib.parse
+
+joker=""
 
 @csrf_exempt
 def receive_data(request):
@@ -109,27 +113,27 @@ def reveal_joker_card(request):
         return JsonResponse({"error": str(e)}, status=500)
 
 @csrf_exempt  # Disable CSRF protection for this view
-def reset_card_state(request):
-    if request.method == 'POST':
-        try:
-            global cardState
-            # Clear the current state values
-            cardState['revealedCardIds'] = []
-            cardState['currentIndex'] = [0, 0, 0]
-            cardState['assignedCardIndices'] = [[], [], []]
-            cardState['displayedCards'] = [[], [], []]
-            cardState['jokerCard'] = None
+# def reset_card_state(request):
+#     if request.method == 'POST':
+#         try:
+#             global cardState
+#             # Clear the current state values
+#             cardState['revealedCardIds'] = []
+#             cardState['currentIndex'] = [0, 0, 0]
+#             cardState['assignedCardIndices'] = [[], [], []]
+#             cardState['displayedCards'] = [[], [], []]
+#             cardState['jokerCard'] = None
 
-            return JsonResponse({
-                'status': 'success',
-                'message': 'Card state has been reset!',
-                'cardState': cardState  # Return the cleared state
-            })
+#             return JsonResponse({
+#                 'status': 'success',
+#                 'message': 'Card state has been reset!',
+#                 'cardState': cardState  # Return the cleared state
+#             })
 
-        except Exception as e:
-            return JsonResponse({"error": str(e)}, status=500)
+#         except Exception as e:
+#             return JsonResponse({"error": str(e)}, status=500)
 
-    return JsonResponse({'status': 'error', 'message': 'Only POST requests are allowed'}, status=405)
+#     return JsonResponse({'status': 'error', 'message': 'Only POST requests are allowed'}, status=405)
 
 @csrf_exempt  # Disable CSRF protection for this view
 def update_card_state(request):
@@ -351,50 +355,6 @@ def assign_card_directly(request):
 
 
 
-@csrf_exempt  # Disable CSRF protection for this view
-def assign_joker_directly(request):
-    try:
-        # Check if jokerCard is already revealed
-        if cardState['jokerCard'] is not None:
-            return JsonResponse({"error": "Joker card has already been revealed"}, status=400)
-
-        # Fetch the latest card value from MongoDB
-        value = None
-        latest_document = mongo_helper.collection.find().sort([('_id', -1)]).limit(1)  # Fetch the latest document
-        for doc in latest_document:
-            value = doc.get('value')  # Assuming 'value' holds the card's name or ID
-        
-        if not value:
-            return JsonResponse({"error": "No card value found in MongoDB"}, status=500)
-
-        # Check if the card with the fetched value is already revealed
-        if value in cardState['revealedCardIds']:
-            return JsonResponse({"error": "Card already revealed as part of other assignments"}, status=400)
-
-        # Search for the card with the fetched value in the available cards
-        available_cards = [card for card in cards if card['id'] not in cardState['revealedCardIds']]
-        selected_card = None
-
-        for card in available_cards:
-            if card['name'] == value:  # Assuming 'name' or some other attribute matches the MongoDB card value
-                selected_card = card
-                break
-
-        if not selected_card:
-            return JsonResponse({"error": "No matching joker card found for the fetched value"}, status=500)
-
-        # Update the cardState
-        cardState['revealedCardIds'].append(selected_card['id'])
-        cardState['jokerCard'] = selected_card
-
-        return JsonResponse({
-            "success": True,
-            "jokerCard": selected_card
-        })
-    except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
-
-
 
 
 
@@ -479,3 +439,248 @@ def assign_card_directly2(request):
 
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+
+
+@csrf_exempt
+def reset_card_state(request):
+    try:
+        # Reset the cardState structure
+        cardState['revealedCardIds'] = []
+        cardState['assignedCardIndices'] = [[], []]
+        cardState['displayedCards'] = [[], []]
+        cardState['jokerCard'] = None
+
+        # Respond with the updated (reset) cardState
+        return JsonResponse({
+            "success": True,
+            "message": "Card state has been successfully reset",
+            "state": cardState
+        })
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+    
+
+
+
+card_assignment_counter = 1
+card_assignment_counter2 = 1
+
+
+# Function to extract number from the card name using regex
+def extract_number_from_name(card_name):
+    match = re.match(r'(\d+|[JTQKA])', card_name)
+    return match.group(0) if match else None
+
+@csrf_exempt
+def assign_card_to_section_A(request):
+    global joker
+    global card_assignment_counter  
+    print("")
+
+    try:
+        
+        print(f"{card_assignment_counter}:card_assignment_counter")
+        # Fetch the latest card value from MongoDB
+        value = None
+        latest_document = mongo_helper.collection.find({"isRead":0})  # Fetch the latest document
+        for doc in latest_document:
+            section_id = card_assignment_counter % 2
+            card_assignment_counter += 1
+            value = doc.get('value') 
+            print(value)
+            card_value=extract_number_from_name(value)
+            print(card_value)
+             # Assuming 'value' is the card name or number
+
+        if not value:
+            return JsonResponse({"error": "No card value found in MongoDB"}, status=500)
+
+       
+        # # Check if all cards for the section have already been assigned
+        # if len(cardState['assignedCardIndices'][section_id]) >= len(cards) // 2:  # Assuming each section gets half the cards
+        #     return JsonResponse({"error": "All cards assigned in this section"}, status=400)
+
+        # Extract the number from the joker card's name, if jokerCard is assigned
+        if card_value == joker:
+            result = f"{section_id} wins"
+           
+        else:
+            result = "Card assigned, no match"
+
+            
+
+
+        mongo_helper.collection.update_one(
+            {"value": value, "isRead": 0},
+            {"$set": {"isRead": 1}}
+        )
+        print(f"Updated card card {value} with isRead: 1")
+        print(joker)
+
+        # Respond with the assigned card and result
+        return JsonResponse({
+            "success": True,
+            "card": card_value,
+            "value": value,
+            "section_id": section_id,
+            "result": result,
+            "joker":joker,
+            # "state": cardState
+        })
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+@csrf_exempt
+def assign_card_to_player(request):
+    global joker
+    global card_assignment_counter2
+    print("NICE")
+
+    try:
+        
+        # print(f"{card_assignment_counter2}:card_assignment_counter")
+        # Fetch the latest card value from MongoDB
+        value = None
+        latest_document = mongo_helper.collection.find({"isRead2":0})  # Fetch the latest document
+        for doc in latest_document:
+            section_id = card_assignment_counter2 % 2
+            card_assignment_counter2 += 1
+            value = doc.get('value') 
+            print(value)
+            card_value=extract_number_from_name(value)
+            print(card_value)
+             # Assuming 'value' is the card name or number
+
+        if not value:
+            return JsonResponse({"error": "No card value found in MongoDB"}, status=500)
+
+       
+        # # Check if all cards for the section have already been assigned
+        # if len(cardState['assignedCardIndices'][section_id]) >= len(cards) // 2:  # Assuming each section gets half the cards
+        #     return JsonResponse({"error": "All cards assigned in this section"}, status=400)
+
+        # Extract the number from the joker card's name, if jokerCard is assigned
+        print("joker is here "+str(joker))
+        if card_value == joker:
+            result = f"{section_id} wins"
+           
+        else:
+            result = "Card assigned, no match"
+
+            
+
+
+        mongo_helper.collection.update_one(
+            {"value": value, "isRead2": 0},
+            {"$set": {"isRead2": 1}}
+        )
+        print(f"Updated card card {value} with isRead2: 1")
+        print(joker)
+
+        # Respond with the assigned card and result
+        return JsonResponse({
+            "success": True,
+            "card": card_value,
+            "value": value,
+            "section_id": section_id,
+            "result": result,
+            "joker":joker,
+            # "state": cardState
+        })
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+
+
+@csrf_exempt  # Disable CSRF protection for this view
+def assign_joker_directly(request):
+    try:
+        # print("jbd1")
+        # Check if jokerCard is already revealed
+        if cardState['jokerCard'] is not None:
+            print("joker revealed ")
+            return JsonResponse({"error": "Joker card has already been revealed"}, status=400)
+
+        # Fetch the latest card value from MongoDB
+        value = None
+        latest_document = mongo_helper.collection.find().sort([('_id', -1)]).limit(1)  # Fetch the latest document
+        for doc in latest_document:
+            value = doc.get('value')  
+        
+        if not value:
+            print("error in value")
+            return JsonResponse({"error": "No card value found in MongoDB"}, status=500)
+
+        # Check if the card with the fetched value is already revealed
+        if value in cardState['revealedCardIds']:
+            return JsonResponse({"error": "Card already revealed as part of other assignments"}, status=400)
+
+        # Search for the card with the fetched value in the available cards
+        available_cards = [card for card in cards if card['id'] not in cardState['revealedCardIds']]
+        selected_card = None
+
+        for card in available_cards:
+            if card['name'] == value:  # Assuming 'name' or some other attribute matches the MongoDB card value
+                selected_card = card
+                break
+
+        if not selected_card:
+            print("error in selected value")
+            return JsonResponse({"error": "No matching joker card found for the fetched value"}, status=500)
+
+        # Update the cardState
+        cardState['revealedCardIds'].append(selected_card['id'])
+        cardState['jokerCard'] = selected_card
+
+        return JsonResponse({
+            "success": True,
+            "jokerCard": selected_card
+        })
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+    
+
+
+
+def get_client():
+    username = urllib.parse.quote_plus("gurpreetkaur325612")
+    password = urllib.parse.quote_plus("Init@123")
+    MONGO_URI = f"mongodb+srv://{username}:{password}@cluster0.cp6fe.mongodb.net/gaj2"  # Specify your database here
+    client = MongoClient(MONGO_URI)
+    return client
+@csrf_exempt
+def get_joker_value(request):
+    global joker
+    client=get_client()
+    print(client)
+    db=client['gaj']
+    collection=db['joker']
+    latest_document = collection.find({},{"value":1,"_id":0})
+    
+    
+    for x in latest_document:
+
+        data=x
+        joker=x.get('value')
+        joker=extract_number_from_name(joker)
+    print(joker)
+    return JsonResponse({"data":data})
+client=get_client()
+db = client['gaj']
+joker_collection = db['joker']
+gaj2_collection = db['gaj2']
+@csrf_exempt
+def reset_collections(request):
+    global card_assignment_counter
+    global card_assignment_counter2
+    try:
+        joker_collection.delete_many({})  # If you want a specific filter, add it inside {}
+        gaj2_collection.delete_many({})
+
+        card_assignment_counter=1
+        card_assignment_counter2=1
+
+        return JsonResponse({'success': True, 'message': 'Collections reset successfully'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})

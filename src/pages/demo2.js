@@ -32,7 +32,7 @@ const CardSections = () => {
     // Use effect to poll the API every 5 seconds
     useEffect(() => {
         fetchCardState();  // Fetch immediately
-        const interval = setInterval(fetchCardState, 1000);  // Poll every 5 seconds
+        const interval = setInterval(fetchCardState, 500);  // Poll every 5 seconds
         return () => clearInterval(interval);  // Clean up interval on component unmount
     }, []);
 
